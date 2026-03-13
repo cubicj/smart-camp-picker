@@ -105,33 +105,19 @@ local ok, err = pcall(function()
         local sp_list = hook_storage.quest_accept_ui:get_CurrentStartPointList()
         if not sp_list or sp_list._size < 2 then return nil end
 
-        local has_typed_camp = {}
-        for idx = 0, sp_list._size - 1 do
-            local sp = sp_list._items[idx]
-            if not sp then goto scan end
-            local ok_t, t = pcall(function() return sp:get_Type() end)
-            if ok_t and t and t ~= 0 then
-                has_typed_camp[sp.CampID] = true
-            end
-            ::scan::
-        end
-
-        local best_visible_idx = nil
+        local best_idx = nil
         local best_dist = math.huge
-        local visible_idx = 0
 
         for idx = 0, sp_list._size - 1 do
             local sp = sp_list._items[idx]
             if not sp then goto continue end
 
-            local ok_t, sp_type = pcall(function() return sp:get_Type() end)
-            if ok_t and sp_type == 0 and has_typed_camp[sp.CampID] then
-                goto continue
-            end
+            local ok_c, camp_id = pcall(function() return sp.CampID end)
+            if not ok_c then goto continue end
 
             local min_dist = nil
             for _, area in ipairs(target_areas) do
-                local d = lookup_distance(stage, area, sp.CampID)
+                local d = lookup_distance(stage, area, camp_id)
                 if d and (not min_dist or d < min_dist) then
                     min_dist = d
                 end
@@ -139,15 +125,13 @@ local ok, err = pcall(function()
 
             if min_dist and min_dist < best_dist then
                 best_dist = min_dist
-                best_visible_idx = visible_idx
+                best_idx = idx
             end
-
-            visible_idx = visible_idx + 1
 
             ::continue::
         end
 
-        return best_visible_idx
+        return best_idx
     end
 
     local function calculate_target()

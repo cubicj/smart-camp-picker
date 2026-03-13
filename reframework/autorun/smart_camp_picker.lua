@@ -116,8 +116,9 @@ local ok, err = pcall(function()
             ::scan::
         end
 
-        local best_idx = nil
+        local best_visible_idx = nil
         local best_dist = math.huge
+        local visible_idx = 0
 
         for idx = 0, sp_list._size - 1 do
             local sp = sp_list._items[idx]
@@ -138,13 +139,15 @@ local ok, err = pcall(function()
 
             if min_dist and min_dist < best_dist then
                 best_dist = min_dist
-                best_idx = idx
+                best_visible_idx = visible_idx
             end
+
+            visible_idx = visible_idx + 1
 
             ::continue::
         end
 
-        return best_idx
+        return best_visible_idx
     end
 
     local function calculate_target()
